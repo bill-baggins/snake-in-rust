@@ -1,4 +1,3 @@
-use std::mem::size_of;
 use crate::raylib_build::GameBuild;
 use crate::globals;
 use raylib::prelude::*;
@@ -13,10 +12,10 @@ pub struct Snake {
     pub arr: VecDeque<[i32; 2]>,
     pub collected_fruit: bool,
     pub hit_self: bool,
+    pub key_hash: HashMap<KeyboardKey, [i32; 2]>,
+    rot_hash: HashMap<[i32; 2], (i32, (f32, f32))>,
     starting_length: i32,
     current_direction: [i32; 2],
-    key_hash: HashMap<KeyboardKey, [i32; 2]>,
-    rot_hash: HashMap<[i32; 2], (i32, (f32, f32))>,
     count: i32,
     count_limit: i32
 }
@@ -47,10 +46,10 @@ impl Snake {
             arr: snake_arr, 
             starting_length: snake_starting_length,
             hit_self: false, 
-            collected_fruit: false, 
-            current_direction: [0, 0],
             key_hash: Default::default(),
             rot_hash: Default::default(),
+            collected_fruit: false, 
+            current_direction: [0, 0],
             count: 0, 
             count_limit
         };
@@ -60,8 +59,6 @@ impl Snake {
 
         // With this new snake instance, spawn the snake in a random place.
         Self::_random_spawn(&mut snake_struct, gb.screen_width, gb.screen_height);
-
-        println!("{} bytes lmao", size_of::<Snake>());
         return snake_struct;
     }
 
@@ -85,13 +82,14 @@ impl Snake {
         }
     }
     
-    pub fn update(&mut self, key: &KeyboardKey) {
+    pub fn update(&mut self, key: &KeyboardKey, screen_width: i32, screen_height: i32) {
         // Guard clause. Exits if the count does not equal the count limit.
         self.count += 1;
         if self.count <= self.count_limit { return ; }
         self.count = 0;
 
         Self::_check_if_snake_hit_itself(self);
+        Self::_prevent_snake_from_leaving_window(self, screen_width, screen_height);
         Self::_move_snake(self, key);
 
     }
@@ -151,20 +149,23 @@ impl Snake {
         }
     }
 
-    fn _check_if_snake_beyond_window_border(&mut self, gb: &mut GameBuild) {
-        let max_x = gb.rl.get_screen_width() / self.head_texture.width();
-        let max_y = gb.rl.get_screen_height() / self.head_texture.height();
-        self.arr[0][0] %= max_x;
-        self.arr[0][1] %= max_y;
-        
-        // if self.arr[0][0] < 0 {
-        //     self.arr[0][0] = max_x;
-        // }
-        // else if self.arr[0][0] > max_x {
-        //     self.arr[0][0] = 0;
-        // }
-        // else if self.arr[0][1] < 0 {
-        //     self.arr[0][1]
-        // }
+    fn _prevent_snake_from_leaving_window(&mut self, screen_width: i32, screen_height: i32) {
+        let min_x = 0;
+        let min_y = 0;
+        let max_x = (screen_width / self.head_texture.width()) - 1;
+        let max_y = (screen_height / self.head_texture.height()) - 1;
+
+        if self.arr[0][0] < min_x {
+            self.arr[0][0] = max_x;
+        }
+        else if self.arr[0][0] > max_x {
+            self.arr[0][0] = 0;
+        }
+        else if self.arr[0][1] < min_y {
+            self.arr[0][1] = max_y;
+        } 
+        else if self.arr[0][1] > max_y {
+            self.arr[0][1] = 0;
+        }
     }
 }

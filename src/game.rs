@@ -27,21 +27,21 @@ pub fn game_loop(gb: &mut GameBuild) {
     let mut snake = Snake::new(snake_head_path, snake_body_path, 3, scale, count_limit, gb);
     let mut current_key = KeyboardKey::KEY_ZERO;
 
-    let pause_text = "Press any key to begin!";
+    let pause_text = "Press the arrow keys to begin!";
     let game_over_text = "Game over! Press the R key to restart.";
     let snake_score_text = |s: &Snake| format!("Score: {}", s.score);
 
     while !gb.rl.window_should_close() {
         let key = gb.rl.get_key_pressed().unwrap_or(KeyboardKey::KEY_ZERO);
 
-        if key != KeyboardKey::KEY_ZERO && current_key != key && game_state != GameState::Over {
+        if snake.key_hash.contains_key(&key) && current_key != key && game_state != GameState::Over {
             if game_state == GameState::Paused { game_state = GameState::Running; }
             current_key = key;
         }
 
         match game_state {
             GameState::Running => { 
-                Snake::update(&mut snake, &current_key);
+                Snake::update(&mut snake, &current_key, screen_width, screen_height);
                 if snake.hit_self {
                     game_state = GameState::Over;
                 }
@@ -62,37 +62,35 @@ pub fn game_loop(gb: &mut GameBuild) {
 
         match game_state {
             GameState::Paused => {
-                d.draw_text(pause_text,
-                            screen_width - (pause_text.len() as i32 * grid.image.width()) / 4,
-                            screen_height - (pause_text.len() as i32 * grid.image.height()) / 4,
-                            20,
-                            Color::YELLOW);
-
                 Grid::draw(&mut grid, grid_x, grid_y, &mut d);
                 Fruit::draw(&mut fruit, &mut d);
                 Snake::draw(&mut snake, &mut d);
+                d.draw_text(pause_text,
+                    (screen_width / 2) - (pause_text.len() * grid.image.width() as usize / 4) as i32 ,
+                    screen_height / 2,
+                    grid.image.width(),
+                    Color::YELLOW);
             },
             GameState::Running => {
                 let score = snake_score_text(&snake);
-                d.draw_text(score.as_str(), 
-                            screen_width - (score.len() as i32 * grid.image.width()), 
-                            grid.image.height(), 
-                            20, 
-                            Color::YELLOW);
-
                 Grid::draw(&mut grid, grid_x, grid_y, &mut d);
                 Fruit::draw(&mut fruit, &mut d);
                 Snake::draw(&mut snake, &mut d);
+                d.draw_text(score.as_str(), 
+                            screen_width - (pause_text.len() as i32 + (grid.image.width() * 4)), 
+                            0, 
+                            grid.image.width(), 
+                            Color::YELLOW);
             },
             GameState::Over => {
-                d.draw_text(game_over_text,
-                            screen_width - (game_over_text.len() as i32 * grid.image.width()) / 4,
-                            screen_height - (game_over_text.len() as i32 * grid.image.height()) / 4,
-                            20,
-                            Color::YELLOW);
                 Grid::draw(&mut grid, grid_x, grid_y, &mut d);
                 Fruit::draw(&mut fruit, &mut d);
                 Snake::draw(&mut snake, &mut d);
+                d.draw_text(game_over_text,
+                    screen_width - (game_over_text.len() as i32 * grid.image.width() / 2),
+                    screen_height - (game_over_text.len() as i32 * grid.image.height() / 2), 
+                    grid.image.width(),
+                    Color::YELLOW);
             }
         }
 
