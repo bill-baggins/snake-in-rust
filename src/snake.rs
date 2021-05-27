@@ -1,3 +1,4 @@
+use crate::fruit::Fruit;
 use crate::raylib_build::GameBuild;
 use crate::globals;
 use raylib::prelude::*;
@@ -10,7 +11,6 @@ pub struct Snake {
     pub head_texture: Texture2D,
     pub body_texture: Texture2D,
     pub arr: VecDeque<[i32; 2]>,
-    pub collected_fruit: bool,
     pub hit_self: bool,
     pub key_hash: HashMap<KeyboardKey, [i32; 2]>,
     rot_hash: HashMap<[i32; 2], (i32, (f32, f32))>,
@@ -45,11 +45,10 @@ impl Snake {
             body_texture: snake_body, 
             arr: snake_arr, 
             starting_length: snake_starting_length,
-            hit_self: false, 
+            hit_self: false,
+            current_direction: [0, 0],
             key_hash: Default::default(),
             rot_hash: Default::default(),
-            collected_fruit: false, 
-            current_direction: [0, 0],
             count: 0, 
             count_limit
         };
@@ -82,16 +81,18 @@ impl Snake {
         }
     }
     
-    pub fn update(&mut self, key: &KeyboardKey, screen_width: i32, screen_height: i32) {
+    pub fn update(&mut self, key: &KeyboardKey, fruit: &mut Fruit, screen_width: i32, screen_height: i32) {
         // Guard clause. Exits if the count does not equal the count limit.
         self.count += 1;
         if self.count <= self.count_limit { return ; }
         self.count = 0;
 
         Self::_check_if_snake_hit_itself(self);
+        if self.hit_self { return ; }
+        
+        Self::_check_if_snake_ate_fruit(self, fruit, screen_width, screen_height);
         Self::_prevent_snake_from_leaving_window(self, screen_width, screen_height);
         Self::_move_snake(self, key);
-
     }
 
     fn _random_spawn(&mut self, screen_width: i32, screen_height: i32) {
@@ -103,7 +104,7 @@ impl Snake {
         }
     }
 
-    fn _check_if_snake_hit_itself(&mut self) {
+    fn _check_if_snake_hit_itself(&mut self){
         for i in 1..self.arr.len() {
             if self.arr[0] == self.arr[i] {
                 self.hit_self = true;
@@ -139,14 +140,6 @@ impl Snake {
         if self.current_direction == globals::IDLE { return ; }
 
         self.arr.push_front([self.arr[0][0] + dir_x, self.arr[0][1] + dir_y]);
-
-        if self.collected_fruit {
-            self.score += 1;
-            self.collected_fruit = false;
-        }
-        else {
-            self.arr.pop_back();
-        }
     }
 
     fn _prevent_snake_from_leaving_window(&mut self, screen_width: i32, screen_height: i32) {
@@ -166,6 +159,20 @@ impl Snake {
         } 
         else if self.arr[0][1] > max_y {
             self.arr[0][1] = 0;
+        }
+    }
+
+    fn _check_if_snake_ate_fruit(&mut self, fruit: &mut Fruit, screen_width: i32, screen_height: i32) {
+        if self.arr[0] == fruit.pos {
+            self.score += 1;
+            for i in 0..self.arr.len() {
+                while fruit.pos == self.arr[i] {
+                    Fruit::spawn_in_random_place(fruit, screen_width, screen_height);   
+                }
+            }
+        }
+        else {
+            self.arr.pop_back();
         }
     }
 }

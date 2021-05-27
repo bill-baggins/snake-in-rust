@@ -1,5 +1,4 @@
 pub mod raylib_build;
-// pub mod event_manager;
 pub mod game;
 pub mod snake;
 pub mod grid;

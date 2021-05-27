@@ -23,7 +23,7 @@ pub fn game_loop(gb: &mut GameBuild) {
     let grid_x = screen_width / grid.image.width();
     let grid_y = screen_height / grid.image.height();
 
-    let mut fruit = Fruit::new(fruit_path, scale, gb);
+    let mut fruit = Fruit::new(fruit_path, screen_width, screen_height, scale, gb);
     let mut snake = Snake::new(snake_head_path, snake_body_path, 3, scale, count_limit, gb);
     let mut current_key = KeyboardKey::KEY_ZERO;
 
@@ -41,15 +41,17 @@ pub fn game_loop(gb: &mut GameBuild) {
 
         match game_state {
             GameState::Running => { 
-                Snake::update(&mut snake, &current_key, screen_width, screen_height);
+                Snake::update(&mut snake, &current_key, &mut fruit, screen_width, screen_height);
+
                 if snake.hit_self {
                     game_state = GameState::Over;
                 }
+
             },
             GameState::Over => {
                 if gb.rl.is_key_pressed(KeyboardKey::KEY_R) {
                     game_state = GameState::Paused;
-                    fruit = Fruit::new(fruit_path, scale, gb);
+                    fruit = Fruit::new(fruit_path, screen_width, screen_height, scale, gb);
                     snake = Snake::new(snake_head_path, snake_body_path, 3, scale, count_limit, gb);
                     current_key = KeyboardKey::KEY_ZERO;
                 }
@@ -87,8 +89,8 @@ pub fn game_loop(gb: &mut GameBuild) {
                 Fruit::draw(&mut fruit, &mut d);
                 Snake::draw(&mut snake, &mut d);
                 d.draw_text(game_over_text,
-                    screen_width - (game_over_text.len() as i32 * grid.image.width() / 2),
-                    screen_height - (game_over_text.len() as i32 * grid.image.height() / 2), 
+                    (screen_width / 2) - (game_over_text.len() * grid.image.width() as usize / 4) as i32,
+                    screen_height / 2, 
                     grid.image.width(),
                     Color::YELLOW);
             }
