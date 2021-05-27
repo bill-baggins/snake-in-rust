@@ -8,7 +8,7 @@ pub struct Fruit {
 }
 
 impl Fruit {
-    pub fn new(path: &str, screen_width: i32, screen_height: i32, scale: f32, gb: &mut GameBuild) -> Fruit {
+    pub fn new(path: &str, snake_pos: &[i32; 2], screen_width: i32, screen_height: i32, scale: f32, gb: &mut GameBuild) -> Fruit {
         let mut texture = Image::load_image(path).expect("Unable to load image 'fruit.png'");
 
         if scale != 0f32 {
@@ -20,8 +20,13 @@ impl Fruit {
 
         let pos: [i32; 2] = [0, 0];
         let mut fruit = Fruit{texture, pos};
+
         Self::spawn_in_random_place(&mut fruit, screen_width, screen_height);
-        return fruit;
+        while &pos == snake_pos {
+            Self::spawn_in_random_place(&mut fruit, screen_width, screen_height);
+        }
+
+        fruit
     }
 
     pub fn draw(&mut self, d: &mut RaylibDrawHandle) {

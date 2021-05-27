@@ -23,8 +23,8 @@ pub fn game_loop(gb: &mut GameBuild) {
     let grid_x = screen_width / grid.image.width();
     let grid_y = screen_height / grid.image.height();
 
-    let mut fruit = Fruit::new(fruit_path, screen_width, screen_height, scale, gb);
     let mut snake = Snake::new(snake_head_path, snake_body_path, 3, scale, count_limit, gb);
+    let mut fruit = Fruit::new(fruit_path, &snake.arr[0], screen_width, screen_height, scale, gb);
     let mut current_key = KeyboardKey::KEY_ZERO;
 
     let pause_text = "Press the arrow keys to begin!";
@@ -51,7 +51,7 @@ pub fn game_loop(gb: &mut GameBuild) {
             GameState::Over => {
                 if gb.rl.is_key_pressed(KeyboardKey::KEY_R) {
                     game_state = GameState::Paused;
-                    fruit = Fruit::new(fruit_path, screen_width, screen_height, scale, gb);
+                    fruit = Fruit::new(fruit_path, &snake.arr[0], screen_width, screen_height, scale, gb);
                     snake = Snake::new(snake_head_path, snake_body_path, 3, scale, count_limit, gb);
                     current_key = KeyboardKey::KEY_ZERO;
                 }
