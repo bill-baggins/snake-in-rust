@@ -1,3 +1,4 @@
+
 use crate::raylib_build::GameBuild;
 use raylib::prelude::*;
 use raylib::core::misc::get_random_value as grv;
@@ -11,11 +12,12 @@ impl Fruit {
     pub fn new(path: &str, snake_pos: &[i32; 2], screen_width: i32, screen_height: i32, scale: f32, gb: &mut GameBuild) -> Fruit {
         let mut texture = Image::load_image(path).expect("Unable to load image 'fruit.png'");
 
-        if scale != 0f32 {
+        if scale != 1f32 {
             let new_texture_width = (texture.width() as f32 * scale) as i32;
             let new_texture_height = (texture.height() as f32 * scale) as i32;
             Image::resize(&mut texture, new_texture_width, new_texture_height);
         }
+
         let texture = gb.rl.load_texture_from_image(&gb.thread, &texture).expect("Unable to convert image 'fruit.png' to a Texture2D");
 
         let pos: [i32; 2] = [0, 0];

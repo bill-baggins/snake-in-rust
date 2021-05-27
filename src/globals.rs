@@ -43,22 +43,3 @@ pub fn rot_hash(snake: &Snake) -> HashMap<[i32; 2], (i32, (f32, f32))> {
     .into_iter()
     .collect()
 }
-
-
-// pub struct Direction{}
-
-// impl Direction {
-//     pub fn key_press(key: KeyboardKey) -> [i32; 2] {
-//         match key {
-//             KeyboardKey::KEY_UP => UP,
-//             KeyboardKey::KEY_DOWN => DOWN,
-//             KeyboardKey::KEY_LEFT => LEFT,
-//             KeyboardKey::KEY_RIGHT=> RIGHT,
-//             KeyboardKey::KEY_W => UP,
-//             KeyboardKey::KEY_S => DOWN,
-//             KeyboardKey::KEY_A => LEFT,
-//             KeyboardKey::KEY_D => RIGHT,
-//             _ => [0, 0]
-//         }
-//     }
-// }
